@@ -1,0 +1,34 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'task-backend/**'
+  pull_request:
+    paths:
+      - 'task-backend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: task-backend
+        run: npm install
+
+      - name: Run tests (if any)
+        working-directory: task-backend
+        run: echo "No tests yet"
+
+      - name: Lint (Optional)
+        working-directory: task-backend
+        run: echo "Add ESLint later"
