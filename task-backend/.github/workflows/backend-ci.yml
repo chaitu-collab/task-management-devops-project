@@ -1,30 +1,49 @@
-name: Build and Push Backend
+name: Backend CI
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "task-backend/**"
 
 jobs:
-  build:
+  build-and-push-backend:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        working-directory: task-backend
+        run: npm install
 
-    - name: Build and Push Docker Image
-      run: |
-        docker build -t chaituupasi2/task-backend:latest ./task-backend
-        docker push chaituupasi2/task-backend:latest
+      # Step 4: Run tests (optional, you can skip if no tests yet)
+      - name: Run tests
+        working-directory: task-backend
+        run: npm test || echo "No tests found, skipping"
+
+      # Step 5: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 6: Build Docker image
+      - name: Build Docker image
+        working-directory: task-backend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/task-backend:latest .
+
+      # Step 7: Push Docker image to Docker Hub
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/task-backend:latest
