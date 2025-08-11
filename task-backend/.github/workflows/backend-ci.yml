@@ -1,7 +1,14 @@
-name: Build and Push Backend
+name: Backend CI
 
 on:
   push:
+    paths:
+      - "task-backend/**"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "task-backend/**"
     branches:
       - main
 
@@ -19,14 +26,12 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: |
-          cd task-backend
-          npm install
+        run: npm install
+        working-directory: task-backend
 
       - name: Run tests
-        run: |
-          cd task-backend
-          npm test || echo "No tests found"
+        run: npm test
+        working-directory: task-backend
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -35,9 +40,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
-        run: |
-          cd task-backend
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/task-backend:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/task-backend:latest .
+        working-directory: task-backend
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/task-backend:latest
